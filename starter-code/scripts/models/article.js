@@ -39,20 +39,26 @@ Article.loadAll = function(inputData) {
   });
 };
 
-
-/* This function below will retrieve the data from either a local or remote
+/* DONE This function below will retrieve the data from either a local or remote
  source, process it, then hand off control to the View: */
 Article.fetchAll = function() {
   if (localStorage.hackerIpsum) {
     /* When our data is already in localStorage:
     1. We can process and load it,
     2. Then we can render the index page.  */
+    Article.loadAll(JSON.parse(localStorage.hackerIpsum));
+    articleView.renderIndexPage();
   } else {
     /* Without our localStorage in memory, we need to:
     1. Retrieve our JSON file with $.getJSON
       1.a Load our json data
       1.b Store that data in localStorage so that we can skip the server call next time,
       1.c And then render the index page.*/
+    $.getJSON ('data/hackerIpsum.json', function (data) {
+      Article.loadAll(data);
+      localStorage.hackerIpsum = JSON.stringify(data);
+      articleView.renderIndexPage();
+    });
   }
 };
 
