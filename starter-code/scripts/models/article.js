@@ -13,7 +13,6 @@ function Article (opts) {
  */
 
 Article.allArticles = [];
-var inputData;
 
 Article.prototype.toHtml = function(scriptTemplateId) {
   var template = Handlebars.compile($(scriptTemplateId).text());
@@ -44,22 +43,21 @@ Article.loadAll = function(inputData) {
  source, process it, then hand off control to the View: */
 
 Article.fetchAll = function() {
-  var localStorageArticles;
 
   if (localStorage.hackerIpsum) {
-    inputData = localStorage.hackerIpsum;
-    Article.loadAll();
+    Article.loadAll(JSON.parse(localStorage.hackerIpsum));
+    articleView.renderIndexPage();
     /* when our data is already in local storage:
       1. first we can proces and load it
       2. then we can render the index page */
 
   } else {
-    localStorageArticles = $.getJSON('data/hackerIpsum.json', function() {
-      localStorage.setItem('hackerIpsum', localStorageArticles);
-      inputData.push(localStorageArticles);
-      console.log(localStorageArticles);
+    $.getJSON('data/hackerIpsum.json', function(data, status, XHR) {
+      localStorage.hackerIpsum = JSON.stringify(data);
+      console.log(data);
+      Article.loadAll(data);
+      articleView.renderIndexPage();
     });
-    Article.loadAll();
 
     /* Without our local storage in memory, we need to:
     1. first retrieve our JSON file with $.getJSON
