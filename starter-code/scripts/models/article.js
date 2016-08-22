@@ -40,7 +40,7 @@ Article.loadAll = function(inputData) {
 };
 
 
-/* This function below will retrieve the data from either a local or remote
+/* DONE This function below will retrieve the data from either a local or remote
  source, process it, then hand off control to the View: */
 Article.fetchAll = function() {
   if (localStorage.hackerIpsum) {
