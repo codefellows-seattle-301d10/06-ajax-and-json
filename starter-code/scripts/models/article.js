@@ -4,13 +4,16 @@ function Article (opts) {
   }
 }
 
-/* TODO: Instead of a global `articles = []` array, let's track this list of all
+/* TODO: **DONE!** Instead of a global `articles = []` array, let's track this list of all
  articles directly on the constructor function. Note: it is NOT on the prototype.
  In JavaScript, functions are themselves objects, which means we can add
  properties/values to them at any time. In this case, we have a key:value pair
  to track, that relates to ALL of the Article objects, so it does not belong on
  the prototype, as that would only be relevant to a single instantiated Article.
  */
+
+Article.allArticles = [];
+var inputData;
 
 Article.prototype.toHtml = function(scriptTemplateId) {
   var template = Handlebars.compile($(scriptTemplateId).text());
@@ -25,20 +28,47 @@ Article.prototype.toHtml = function(scriptTemplateId) {
  call these "class-level" functions, that are relevant to the entire "class"
  of objects that are Articles, rather than just one instance. */
 
-/* TODO: Refactor this code into a function for greater control.
+/* TODO: **DONE!**  Refactor this code into a function for greater control.
     It will take in our data, and process it via the Article constructor: */
 
-ourLocalData.sort(function(a,b) {
-  return (new Date(b.publishedOn)) - (new Date(a.publishedOn));
-});
 
-ourLocalData.forEach(function(ele) {
-  articles.push(new Article(ele));
-});
-
+Article.loadAll = function(inputData) {
+  inputData.sort(function(a,b) {
+    return (new Date(b.publishedOn)) - (new Date(a.publishedOn));
+  }).forEach(function(ele) {
+    Article.allArticles.push(new Article(ele));
+  });
+};
 
 /* This function below will retrieve the data from either a local or remote
  source, process it, then hand off control to the View: */
+
+Article.fetchAll = function() {
+  var localStorageArticles;
+
+  if (localStorage.hackerIpsum) {
+    inputData = localStorage.hackerIpsum;
+    Article.loadAll();
+    /* when our data is already in local storage:
+      1. first we can proces and load it
+      2. then we can render the index page */
+
+  } else {
+    localStorageArticles = $.getJSON('data/hackerIpsum.json', function() {
+      localStorage.setItem('hackerIpsum', localStorageArticles);
+      inputData.push(localStorageArticles);
+      console.log(localStorageArticles);
+    });
+    Article.loadAll();
+
+    /* Without our local storage in memory, we need to:
+    1. first retrieve our JSON file with $.getJSON
+      a. load our json data
+      b. store that data in local storage so that we can skip the server call next time
+      c. and then render the index page*/
+  };
+};
+
 
 
 /* Great work so far! STRETCH GOAL TIME!? Refactor your fetchAll above, or
