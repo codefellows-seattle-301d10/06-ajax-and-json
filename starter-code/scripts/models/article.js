@@ -27,7 +27,7 @@ Article.prototype.toHtml = function(scriptTemplateId) {
  call these "class-level" functions, that are relevant to the entire "class"
  of objects that are Articles, rather than just one instance. */
 
-/* TODO: **DONE!**  Refactor this code into a function for greater control.
+/* TODO: DONE Refactor this code into a function for greater control.
     It will take in our data, and process it via the Article constructor: */
 
 
