@@ -30,7 +30,6 @@ Article.prototype.toHtml = function(scriptTemplateId) {
 /* TODO: DONE Refactor this code into a function for greater control.
     It will take in our data, and process it via the Article constructor: */
 
-
 Article.loadAll = function(inputData) {
   inputData.sort(function(a,b) {
     return (new Date(b.publishedOn)) - (new Date(a.publishedOn));
@@ -44,13 +43,20 @@ Article.loadAll = function(inputData) {
  source, process it, then hand off control to the View: */
 Article.fetchAll = function() {
   if (localStorage.hackerIpsum) {
+    var retreivedData = JSON.parse(localStorage.getItem('hackerIpsum'));
+    // console.log(retreivedData);
+    Article.loadAll(retreivedData);
+    console.log('rendering!');
+    articleView.renderIndexPage();
     /* When our data is already in localStorage:
     1. We can process and load it,
     2. Then we can render the index page.  */
-  } else {
+  }
+
+  else {
     $.getJSON('../data/hackeripsum.json', function(data) {
-      localStorage.setItem(JSON.stringify('hackerIpsum'), data);
-      articleView.renderIndexPage();
+      localStorage.setItem('hackerIpsum', JSON.stringify(data));
+      Article.fetchAll(); // recursive call
     });
     /* Without our localStorage in memory, we need to:
     1. Retrieve our JSON file with $.getJSON
@@ -58,6 +64,7 @@ Article.fetchAll = function() {
       1.b Store that data in localStorage so that we can skip the server call next time,
       1.c And then render the index page.*/
   }
+
 };
 
 Article.fetchAll();
