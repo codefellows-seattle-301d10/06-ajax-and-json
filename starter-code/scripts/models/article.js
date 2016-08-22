@@ -48,6 +48,10 @@ Article.fetchAll = function() {
     1. We can process and load it,
     2. Then we can render the index page.  */
   } else {
+    $.getJSON('../data/hackeripsum.json', function(data) {
+      localStorage.setItem(JSON.stringify('hackerIpsum'), data);
+      articleView.renderIndexPage();
+    });
     /* Without our localStorage in memory, we need to:
     1. Retrieve our JSON file with $.getJSON
       1.a Load our json data
@@ -56,6 +60,7 @@ Article.fetchAll = function() {
   }
 };
 
+Article.fetchAll();
 
 
 /* Great work so far! STRETCH GOAL TIME!? Refactor your fetchAll above, or
