@@ -46,45 +46,40 @@ Article.fetchAll = function() {
       console.log(xhr.getResponseHeader('eTag'));
       localStorage.hackerIpsum = JSON.stringify(data);
       localStorage.eTag = JSON.stringify(xhr.getResponseHeader('eTag'));
-      console.log(typeof(xhr.getResponseHeader('eTag')));
+      // console.log(typeof(xhr.getResponseHeader('eTag')));
       console.log('got fresh data');
       Article.fetchAll(); // recursive call
     });
-
-    /* When our data is already in localStorage:
-    1. We can process and load it,
-    2. Then we can render the index page.  */
   }
   else {
-    $.getJSON('../data/hackeripsum.json', function(data, message, xhr) {
-      console.log(xhr);
-      var newEtag = JSON.stringify(xhr.getResponseHeader('eTag'));
-      console.log('new eTag', newEtag, 'old eTag', localStorage.eTag);
-      if (newEtag !== localStorage.eTag) {
-        //eTag has changed
-        localStorage.hackerIpsum = JSON.stringify(data);
-        localStorage.eTag = newEtag;
-        console.log('overriding local data', newEtag, localStorage.eTag);
-      }
-      else {
-        //eTag hasn't changed
-        console.log('data is the same');
-      }
-      //render
-      var retreivedData = JSON.parse(localStorage.hackerIpsum);
-      Article.loadAll(retreivedData);
-      // console.log(retreivedData);
-      console.log('rendering!');
-      articleView.renderIndexPage();
-    });
-  }
-  // console.log('did nothing');
-    /* Without our localStorage in memory, we need to:
-    1. Retrieve our JSON file with $.getJSON
-      1.a Load our json data
-      1.b Store that data in localStorage so that we can skip the server call next time,
-      1.c And then render the index page.*/
+    //CHANGEd SO IT IS AN AJAX CALL FOR JUST THE HEADER
+    $.ajax({
+      type: 'HEAD',
+      url:'../data/hackeripsum.json',
+      success: function(data, message, xhr) {
+        console.log(xhr);
+        var newEtag = JSON.stringify(xhr.getResponseHeader('eTag'));
+        console.log('new eTag', newEtag, 'old eTag', localStorage.eTag);
 
+        if (newEtag !== localStorage.eTag) {
+          //eTag has changed, delete local data
+          console.log('deleting local data', newEtag, localStorage.eTag);
+          localStorage.hackerIpsum = '';
+          localStorage.eTag = '';
+          Article.fetchAll(); // recursive call
+        }
+        else {
+          //eTag hasn't changed
+          console.log('data is the same');
+        }
+        //render
+        var retreivedData = JSON.parse(localStorage.hackerIpsum);
+        Article.loadAll(retreivedData);
+        console.log('rendering!');
+        articleView.renderIndexPage();
+      }  // end of success
+    }); // end of ajax
+  }
 };
 
 
