@@ -42,29 +42,40 @@ Article.loadAll = function(inputData) {
 /* This function below will retrieve the data from either a local or remote
  source, process it, then hand off control to the View: */
 
-Article.fetchAll = function() {
+Article.getAll = function() {
+  $.getJSON('data/hackerIpsum.json', function(data, status, xhr) {
+    localStorage.hackerIpsum = JSON.stringify(data);
+    localStorage.eTag = xhr.getResponseHeader('eTag');
+    Article.loadAll(data);
+    articleView.renderIndexPage();
+  });
+};
 
+Article.fetchAll = function() {
   if (localStorage.hackerIpsum) {
+    $.ajax({
+      type: 'HEAD',
+      url: 'data/hackerIpsum.json',
+      success: function(data, status, xhr) {
+        var eTag = xhr.getResponseHeader('eTag');
+        if (!localStorage.eTag || localStorage.eTag !== eTag) {
+          Article.getAll();
+        };
+      }
+    });
     Article.loadAll(JSON.parse(localStorage.hackerIpsum));
     articleView.renderIndexPage();
     /* when our data is already in local storage:
       1. first we can proces and load it
       2. then we can render the index page */
-
   } else {
-    $.getJSON('data/hackerIpsum.json', function(data, status, XHR) {
-      localStorage.hackerIpsum = JSON.stringify(data);
-      console.log(data);
-      Article.loadAll(data);
-      articleView.renderIndexPage();
-    });
-
+    Article.getAll();
+  };
     /* Without our local storage in memory, we need to:
     1. first retrieve our JSON file with $.getJSON
       a. load our json data
       b. store that data in local storage so that we can skip the server call next time
       c. and then render the index page*/
-  };
 };
 
 
