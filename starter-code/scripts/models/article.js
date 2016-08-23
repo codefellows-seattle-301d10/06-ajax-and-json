@@ -30,7 +30,6 @@ Article.prototype.toHtml = function(scriptTemplateId) {
 /* TODO: DONE Refactor this code into a function for greater control.
     It will take in our data, and process it via the Article constructor: */
 
-
 Article.loadAll = function(inputData) {
   inputData.sort(function(a,b) {
     return (new Date(b.publishedOn)) - (new Date(a.publishedOn));
@@ -39,20 +38,47 @@ Article.loadAll = function(inputData) {
   });
 };
 
-
 /* This function below will retrieve the data from either a local or remote
  source, process it, then hand off control to the View: */
 Article.fetchAll = function() {
-  if (localStorage.hackerIpsum) {
-    /* When our data is already in localStorage:
-    1. We can process and load it,
-    2. Then we can render the index page.  */
-  } else {
-    /* Without our localStorage in memory, we need to:
-    1. Retrieve our JSON file with $.getJSON
-      1.a Load our json data
-      1.b Store that data in localStorage so that we can skip the server call next time,
-      1.c And then render the index page.*/
+  if (!localStorage.hackerIpsum) {
+    $.getJSON('../data/hackeripsum.json', function(data, message, xhr) {
+      console.log(xhr.getResponseHeader('eTag'));
+      localStorage.hackerIpsum = JSON.stringify(data);
+      localStorage.eTag = JSON.stringify(xhr.getResponseHeader('eTag'));
+      // console.log(typeof(xhr.getResponseHeader('eTag')));
+      console.log('got fresh data');
+      Article.fetchAll(); // recursive call
+    });
+  }
+  else {
+    //CHANGEd SO IT IS AN AJAX CALL FOR JUST THE HEADER
+    $.ajax({
+      type: 'HEAD',
+      url:'../data/hackeripsum.json',
+      success: function(data, message, xhr) {
+        console.log(xhr);
+        var newEtag = JSON.stringify(xhr.getResponseHeader('eTag'));
+        console.log('new eTag', newEtag, 'old eTag', localStorage.eTag);
+
+        if (newEtag !== localStorage.eTag) {
+          //eTag has changed, delete local data
+          console.log('deleting local data', newEtag, localStorage.eTag);
+          localStorage.hackerIpsum = '';
+          localStorage.eTag = '';
+          Article.fetchAll(); // recursive call
+        }
+        else {
+          //eTag hasn't changed
+          console.log('data is the same');
+        }
+        //render
+        var retreivedData = JSON.parse(localStorage.hackerIpsum);
+        Article.loadAll(retreivedData);
+        console.log('rendering!');
+        articleView.renderIndexPage();
+      }  // end of success
+    }); // end of ajax
   }
 };
 
@@ -61,7 +87,7 @@ Article.fetchAll = function() {
 /* Great work so far! STRETCH GOAL TIME!? Refactor your fetchAll above, or
    get some additional typing practice below. Our main goal in this part of the
    lab will be saving the eTag located in Headers, to see if it's been updated!
-
+// STRETCH GOAL IS DONE!
   Article.fetchAll = function() {
     if (localStorage.hackerIpsum) {
       // Let's make a request to get the eTag (hint: you may need to use a different
